@@ -58,7 +58,8 @@ docker build --target api -t leads-api .
 docker build --target web -t leads-web .
 ```
 
-To require a login, uncomment the `BASIC_AUTH_*` and `API_BASIC_AUTH_*` lines in `docker-compose.yml`.
+To require a login, uncomment the `BASIC_AUTH_*`, `API_BASIC_AUTH_*` and `PORTAL_BASIC_AUTH_*` lines in
+`docker-compose.yml` (see [Basic auth](#basic-auth)).
 
 ## Configuration
 
@@ -79,7 +80,8 @@ Everything is optional; the defaults work out of the box. Copy `apps/api/.env.ex
 | Variable                                   | Default                 | Meaning                                                  |
 | ------------------------------------------ | ----------------------- | -------------------------------------------------------- |
 | `API_URL`                                  | `http://localhost:4000` | Where the API is. Only the Next.js server calls it       |
-| `API_BASIC_AUTH_USER`, `API_BASIC_AUTH_PASSWORD` | _(empty)_         | The login to send, when the API has auth turned on       |
+| `API_BASIC_AUTH_USER`, `API_BASIC_AUTH_PASSWORD` | _(empty)_         | The login the web server sends to the API, when the API has auth turned on |
+| `PORTAL_BASIC_AUTH_USER`, `PORTAL_BASIC_AUTH_PASSWORD` | _(empty = no login)_ | Set **both** to make the browser ask for a login before showing any page |
 
 ## Scripts
 
@@ -290,8 +292,32 @@ curl -u admin:s3cret http://localhost:4000/api/leads     # 200
 curl http://localhost:4000/api/health                    # 200 (health is always public)
 ```
 
-For the web portal, give the Next.js server the same login through `API_BASIC_AUTH_USER` and
-`API_BASIC_AUTH_PASSWORD`. The browser never talks to the API directly, so the password is never sent to it.
+There are two independent logins, both off by default:
+
+| Protects           | Set these variables                                  | Where                |
+| ------------------ | ---------------------------------------------------- | -------------------- |
+| The **API**        | `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD`             | `apps/api/.env`      |
+| The **web portal** | `PORTAL_BASIC_AUTH_USER`, `PORTAL_BASIC_AUTH_PASSWORD` | `apps/web/.env.local` |
+
+With the portal login on, the browser shows its own sign-in prompt before any page is served. If the API is also
+protected, give the web server its login through `API_BASIC_AUTH_USER` and `API_BASIC_AUTH_PASSWORD`. The browser
+never talks to the API directly, so the API password is never sent to it. Setting only one of a pair is treated as a
+mistake: the portal refuses every request (HTTP 500 with an explanation) instead of silently staying open, and the
+API refuses to start.
+
+Example, protecting everything with the same login:
+
+```bash
+# apps/api/.env
+BASIC_AUTH_USER=admin
+BASIC_AUTH_PASSWORD=s3cret
+
+# apps/web/.env.local
+API_BASIC_AUTH_USER=admin
+API_BASIC_AUTH_PASSWORD=s3cret
+PORTAL_BASIC_AUTH_USER=admin
+PORTAL_BASIC_AUTH_PASSWORD=s3cret
+```
 
 ## Web portal
 

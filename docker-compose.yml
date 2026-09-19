@@ -27,6 +27,9 @@ services:
       API_URL: http://api:4000
       # API_BASIC_AUTH_USER: admin
       # API_BASIC_AUTH_PASSWORD: change-me
+      # Uncomment both to make the browser ask for a login before showing the portal.
+      # PORTAL_BASIC_AUTH_USER: admin
+      # PORTAL_BASIC_AUTH_PASSWORD: change-me
     depends_on:
       api:
         condition: service_healthy
