@@ -64,7 +64,7 @@ COPY apps/web/package.json apps/web/
 RUN npm ci --omit=dev -w apps/web && npm cache clean --force
 
 COPY --from=build /app/apps/web/.next apps/web/.next
-COPY apps/web/next.config.ts apps/web/
+COPY apps/web/next.config.mjs apps/web/
 
 USER node
 WORKDIR /app/apps/web
