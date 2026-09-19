@@ -6,7 +6,7 @@ in TypeScript.
 - Manage leads (name, email, phone, status) and keep notes on each one.
 - Search, filter by status, paginate, drag rows to reorder, clone, and see counts per status.
 - Consistent JSON responses, validation with clear messages, proper HTTP status codes.
-- A sign-in popup for the portal and HTTP Basic auth for the API (on by default, demo login `admin` / `admin123`).
+- A sign-in popup for the portal and HTTP Basic auth for the API (on by default, demo login `admin@gmail.com` / `admin123`).
 - Jest tests, seed script, Dockerfile.
 
 ## Contents
@@ -32,7 +32,7 @@ npm run dev
 
 **Sign in.** Opening the portal shows a **sign-in popup**. The demo login is:
 
-> **Username:** `admin`  **Password:** `admin123`
+> **Username:** `admin@gmail.com`  **Password:** `admin123`
 
 It protects the API too (the portal signs in to it for you). See [Login](#login) to change the password or switch
 the login off.
@@ -66,7 +66,7 @@ docker build --target api -t leads-api .
 docker build --target web -t leads-web .
 ```
 
-The login is on here too: open http://localhost:3000 and sign in with `admin` / `admin123`. To choose your own
+The login is on here too: open http://localhost:3000 and sign in with `admin@gmail.com` / `admin123`. To choose your own
 password, or turn the login off, edit the commented lines in `docker-compose.yml` (see [Login](#login)).
 
 ## Configuration
@@ -82,7 +82,7 @@ Everything is optional; the defaults work out of the box. Copy `apps/api/.env.ex
 | `DATABASE_PATH`                       | `data/leads.db`         | SQLite file. `:memory:` keeps everything in RAM (tests)    |
 | `CORS_ORIGIN`                         | `http://localhost:3000` | Origin allowed to call the API from a browser              |
 | `BASIC_AUTH_ENABLED`                  | `true`                  | `false` turns the API login off                            |
-| `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD` | `admin` / `admin123` | Your own login. Set **both** or neither. Protects every `/api` route except `/api/health` |
+| `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD` | `admin@gmail.com` / `admin123` | Your own login. Set **both** or neither. Protects every `/api` route except `/api/health` |
 
 **Web** (`apps/web`)
 
@@ -90,8 +90,8 @@ Everything is optional; the defaults work out of the box. Copy `apps/api/.env.ex
 | ------------------------------------------ | ----------------------- | -------------------------------------------------------- |
 | `API_URL`                                  | `http://localhost:4000` | Where the API is. Only the Next.js server calls it       |
 | `PORTAL_LOGIN_ENABLED`                      | `true`                  | `false` turns the sign-in popup off                      |
-| `PORTAL_LOGIN_USER`, `PORTAL_LOGIN_PASSWORD`  | `admin` / `admin123` | Your own portal login. Set **both** or neither |
-| `API_BASIC_AUTH_USER`, `API_BASIC_AUTH_PASSWORD` | `admin` / `admin123` | The login the web server sends to the API. Must match the API's login |
+| `PORTAL_LOGIN_USER`, `PORTAL_LOGIN_PASSWORD`  | `admin@gmail.com` / `admin123` | Your own portal login. Set **both** or neither |
+| `API_BASIC_AUTH_USER`, `API_BASIC_AUTH_PASSWORD` | `admin@gmail.com` / `admin123` | The login the web server sends to the API. Must match the API's login |
 
 ## Scripts
 
@@ -135,7 +135,7 @@ case), `phone` (optional), `status` (`new`, `contacted`, `qualified` or `lost`; 
 ### Examples
 
 Every command below was run against a fresh, seeded API. Responses are shortened here. The API asks for the login,
-so the commands include `-u admin:admin123` (the demo login; see [Login](#login)). Only `/api/health` is
+so the commands include `-u admin@gmail.com:admin123` (the demo login; see [Login](#login)). Only `/api/health` is
 public.
 
 **Health**
@@ -153,8 +153,8 @@ curl http://localhost:4000/api/health
 **List, search and filter** (`GET /api/leads?search=&status=&page=&limit=`)
 
 ```bash
-curl -u admin:admin123 "http://localhost:4000/api/leads?limit=2"
-curl -u admin:admin123 "http://localhost:4000/api/leads?search=acme&status=new"
+curl -u admin@gmail.com:admin123 "http://localhost:4000/api/leads?limit=2"
+curl -u admin@gmail.com:admin123 "http://localhost:4000/api/leads?search=acme&status=new"
 ```
 
 ```json
@@ -169,7 +169,7 @@ curl -u admin:admin123 "http://localhost:4000/api/leads?search=acme&status=new"
 **Create a lead** (`POST /api/leads`, responds `201 Created` with a `Location` header)
 
 ```bash
-curl -u admin:admin123 -X POST http://localhost:4000/api/leads \
+curl -u admin@gmail.com:admin123 -X POST http://localhost:4000/api/leads \
   -H "Content-Type: application/json" \
   -d '{"name":"Priya Nair","email":"priya@example.com","phone":"+91 90000 11111"}'
 ```
@@ -184,13 +184,13 @@ curl -u admin:admin123 -X POST http://localhost:4000/api/leads \
 **Get one lead**
 
 ```bash
-curl -u admin:admin123 http://localhost:4000/api/leads/7
+curl -u admin@gmail.com:admin123 http://localhost:4000/api/leads/7
 ```
 
 **Update a lead.** Send only the fields you want to change. `"phone": null` clears the phone number.
 
 ```bash
-curl -u admin:admin123 -X PATCH http://localhost:4000/api/leads/7 \
+curl -u admin@gmail.com:admin123 -X PATCH http://localhost:4000/api/leads/7 \
   -H "Content-Type: application/json" \
   -d '{"status":"contacted"}'
 ```
@@ -198,7 +198,7 @@ curl -u admin:admin123 -X PATCH http://localhost:4000/api/leads/7 \
 **Delete a lead** (its notes are deleted with it)
 
 ```bash
-curl -u admin:admin123 -X DELETE http://localhost:4000/api/leads/7
+curl -u admin@gmail.com:admin123 -X DELETE http://localhost:4000/api/leads/7
 ```
 
 ```json
@@ -208,11 +208,11 @@ curl -u admin:admin123 -X DELETE http://localhost:4000/api/leads/7
 **Add a note, then list notes** (newest first)
 
 ```bash
-curl -u admin:admin123 -X POST http://localhost:4000/api/leads/7/notes \
+curl -u admin@gmail.com:admin123 -X POST http://localhost:4000/api/leads/7/notes \
   -H "Content-Type: application/json" \
   -d '{"content":"Called, wants a demo next week."}'
 
-curl -u admin:admin123 http://localhost:4000/api/leads/7/notes
+curl -u admin@gmail.com:admin123 http://localhost:4000/api/leads/7/notes
 ```
 
 ```json
@@ -224,7 +224,7 @@ curl -u admin:admin123 http://localhost:4000/api/leads/7/notes
 **Counts per status** (used by the boxes at the top of the list)
 
 ```bash
-curl -u admin:admin123 http://localhost:4000/api/leads/stats
+curl -u admin@gmail.com:admin123 http://localhost:4000/api/leads/stats
 ```
 
 ```json
@@ -237,14 +237,14 @@ curl -u admin:admin123 http://localhost:4000/api/leads/stats
 must be unique.
 
 ```bash
-curl -u admin:admin123 -X POST http://localhost:4000/api/leads/7/clone
+curl -u admin@gmail.com:admin123 -X POST http://localhost:4000/api/leads/7/clone
 ```
 
 **Reorder.** The leads listed swap among the positions they already hold, so leads that are not in the request keep
 their place.
 
 ```bash
-curl -u admin:admin123 -X PATCH http://localhost:4000/api/leads/reorder \
+curl -u admin@gmail.com:admin123 -X PATCH http://localhost:4000/api/leads/reorder \
   -H "Content-Type: application/json" \
   -d '{"ids":[1,2]}'
 ```
@@ -269,7 +269,7 @@ Every response, success or failure, has the same five keys. Values that do not a
 Validation errors list every problem at once, so a form can show them all:
 
 ```bash
-curl -u admin:admin123 -X POST http://localhost:4000/api/leads -H "Content-Type: application/json" -d '{"email":"nope"}'
+curl -u admin@gmail.com:admin123 -X POST http://localhost:4000/api/leads -H "Content-Type: application/json" -d '{"email":"nope"}'
 ```
 
 ```json
@@ -282,11 +282,11 @@ curl -u admin:admin123 -X POST http://localhost:4000/api/leads -H "Content-Type:
 Other cases you can try:
 
 ```bash
-curl -i -u admin:admin123 http://localhost:4000/api/leads/999          # 404  Lead not found
-curl -i -u admin:admin123 http://localhost:4000/api/leads/abc          # 400  id must be a positive integer
-curl -i -u admin:admin123 -X POST http://localhost:4000/api/leads/7/notes \
+curl -i -u admin@gmail.com:admin123 http://localhost:4000/api/leads/999          # 404  Lead not found
+curl -i -u admin@gmail.com:admin123 http://localhost:4000/api/leads/abc          # 400  id must be a positive integer
+curl -i -u admin@gmail.com:admin123 -X POST http://localhost:4000/api/leads/7/notes \
   -H "Content-Type: application/json" -d '{"content":"   "}'   # 400  Content is required (empty note)
-curl -i -u admin:admin123 -X PATCH http://localhost:4000/api/leads/7 \
+curl -i -u admin@gmail.com:admin123 -X PATCH http://localhost:4000/api/leads/7 \
   -H "Content-Type: application/json" -d '{}'                  # 400  Provide at least one field to update
 ```
 
@@ -294,17 +294,17 @@ curl -i -u admin:admin123 -X PATCH http://localhost:4000/api/leads/7 \
 
 Both the web portal and the API are protected, and it is **on by default** with a demo login:
 
-> **Username:** `admin`  **Password:** `admin123`
+> **Username:** `admin@gmail.com`  **Password:** `admin123`
 
 | Protects           | How you sign in                                                                              |
 | ------------------ | -------------------------------------------------------------------------------------------- |
 | The **web portal** | A **sign-in popup**. Any page you open while signed out shows it, and after signing in you land on the page you asked for. A **Sign out** button appears in the header. |
-| The **API**        | HTTP Basic auth (`curl -u admin:admin123 ...`). Every `/api` route except `/api/health` needs it; without it you get `401` and a `WWW-Authenticate` header. |
+| The **API**        | HTTP Basic auth (`curl -u admin@gmail.com:admin123 ...`). Every `/api` route except `/api/health` needs it; without it you get `401` and a `WWW-Authenticate` header. |
 
 ```bash
 curl http://localhost:4000/api/leads                           # 401
-curl -u admin:wrong http://localhost:4000/api/leads            # 401
-curl -u admin:admin123 http://localhost:4000/api/leads         # 200
+curl -u admin@gmail.com:wrong http://localhost:4000/api/leads            # 401
+curl -u admin@gmail.com:admin123 http://localhost:4000/api/leads         # 200
 curl http://localhost:4000/api/health                          # 200 (health is always public)
 ```
 

@@ -1,8 +1,8 @@
 # Runs the whole app: docker compose up --build
-#   Web portal: http://localhost:3000   (sign-in popup: admin / admin123)
+#   Web portal: http://localhost:3000   (sign-in popup: admin@gmail.com / admin123)
 #   API:        http://localhost:4000
 #
-# Login is ON by default with the demo login admin / admin123, for both the portal and the API.
+# Login is ON by default with the demo login admin@gmail.com / admin123, for both the portal and the API.
 # Before using this for anything real, uncomment the lines below and choose your own password
 # (use the same values in the api and web services so they keep working together).
 services:
@@ -15,7 +15,7 @@ services:
     environment:
       CORS_ORIGIN: http://localhost:3000
       # Your own API login (set both):
-      # BASIC_AUTH_USER: admin
+      # BASIC_AUTH_USER: admin@gmail.com
       # BASIC_AUTH_PASSWORD: change-me
       # Or turn the API login off:
       # BASIC_AUTH_ENABLED: 'false'
@@ -32,12 +32,12 @@ services:
     environment:
       API_URL: http://api:4000
       # Your own portal sign-in (set both):
-      # PORTAL_LOGIN_USER: admin
+      # PORTAL_LOGIN_USER: admin@gmail.com
       # PORTAL_LOGIN_PASSWORD: change-me
       # Or turn the portal sign-in popup off:
       # PORTAL_LOGIN_ENABLED: 'false'
       # The login this service sends to the API: must match the API's login above.
-      # API_BASIC_AUTH_USER: admin
+      # API_BASIC_AUTH_USER: admin@gmail.com
       # API_BASIC_AUTH_PASSWORD: change-me
     depends_on:
       api:

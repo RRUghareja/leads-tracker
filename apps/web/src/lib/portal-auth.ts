@@ -4,7 +4,7 @@ import { DEFAULT_LOGIN, OFF_VALUES } from '@/constants/constants';
  * How the portal's own login (the sign-in popup) is configured. Read from the environment each time,
  * and safe to use from Next.js middleware (no Node-only APIs).
  *
- *   - ON by default, with the demo login (admin / admin123).
+ *   - ON by default, with the demo login (admin@gmail.com / admin123).
  *   - PORTAL_LOGIN_USER + PORTAL_LOGIN_PASSWORD choose a different login. Set both or neither.
  *   - PORTAL_LOGIN_ENABLED=false turns the login off.
  *

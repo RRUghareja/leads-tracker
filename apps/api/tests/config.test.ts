@@ -64,7 +64,7 @@ describe('Basic auth configuration', () => {
     // No BASIC_AUTH_* at all, and the flag left at its default (on).
     const demo = { BASIC_AUTH_ENABLED: undefined };
 
-    it('asks for a login on the API, and accepts admin / admin123', async () => {
+    it('asks for a login on the API, and accepts admin@gmail.com / admin123', async () => {
       const { app } = createTestContext(demo);
 
       expect((await request(app).get('/api/leads')).status).toBe(401);

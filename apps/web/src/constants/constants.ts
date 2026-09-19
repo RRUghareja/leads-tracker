@@ -6,7 +6,7 @@ export const DEFAULT_API_URL = 'http://localhost:4000';
  * The demo login used when nothing else is configured. It matches the API's default, so the portal
  * and the API work together with no setup. Change it for anything beyond a demo.
  */
-export const DEFAULT_LOGIN = { USER: 'admin', PASSWORD: 'admin123' } as const;
+export const DEFAULT_LOGIN = { USER: 'admin@gmail.com', PASSWORD: 'admin123' } as const;
 
 /** The sign-in cookie: how it is named and how long a sign-in lasts. */
 export const SESSION = {
