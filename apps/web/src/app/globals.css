@@ -736,3 +736,51 @@ h2 {
   --card-accent: var(--status-lost-fg);
   --card-tint: var(--status-lost-bg);
 }
+
+/* Sign-in popup */
+.login {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(16, 24, 40, 0.55);
+  backdrop-filter: blur(4px);
+}
+.login__card {
+  width: min(400px, 100%);
+  padding: 1.6rem 1.6rem 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 24px 60px rgba(16, 24, 40, 0.35);
+}
+.login__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+  font-weight: 700;
+}
+.login__card h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.4rem;
+}
+.login__subtitle {
+  margin: 0 0 1.1rem;
+  font-size: 0.9rem;
+}
+.login__submit {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+}
+.login__hint {
+  margin: 1rem 0 0;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}

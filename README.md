@@ -6,13 +6,13 @@ in TypeScript.
 - Manage leads (name, email, phone, status) and keep notes on each one.
 - Search, filter by status, paginate, drag rows to reorder, clone, and see counts per status.
 - Consistent JSON responses, validation with clear messages, proper HTTP status codes.
-- HTTP Basic auth on the portal and the API (on by default, demo login `admin` / `admin123`), Jest tests, seed
-  script, Dockerfile.
+- A sign-in popup for the portal and HTTP Basic auth for the API (on by default, demo login `admin` / `admin123`).
+- Jest tests, seed script, Dockerfile.
 
 ## Contents
 
 [Quick start](#quick-start) · [Docker](#docker) · [Configuration](#configuration) · [Scripts](#scripts) ·
-[API](#api) · [Web portal](#web-portal) · [Data model](#data-model) · [Project layout](#project-layout) ·
+[API](#api) · [Login](#login) · [Web portal](#web-portal) · [Data model](#data-model) · [Project layout](#project-layout) ·
 [Design decisions](#design-decisions) · [Tests](#tests)
 
 ## Quick start
@@ -30,12 +30,12 @@ npm run dev
 | API        | http://localhost:4000            |
 | Health     | http://localhost:4000/api/health |
 
-**Sign in.** The browser asks for a login when you open the portal. The demo login is:
+**Sign in.** Opening the portal shows a **sign-in popup**. The demo login is:
 
 > **Username:** `admin`  **Password:** `admin123`
 
-It protects the API too (the portal signs in to it for you). See [Basic auth](#basic-auth) to change the password
-or switch the login off.
+It protects the API too (the portal signs in to it for you). See [Login](#login) to change the password or switch
+the login off.
 
 The database file (`apps/api/data/leads.db`) is created on first start. To fill it with six sample leads and notes:
 
@@ -67,7 +67,7 @@ docker build --target web -t leads-web .
 ```
 
 The login is on here too: open http://localhost:3000 and sign in with `admin` / `admin123`. To choose your own
-password, or turn the login off, edit the commented lines in `docker-compose.yml` (see [Basic auth](#basic-auth)).
+password, or turn the login off, edit the commented lines in `docker-compose.yml` (see [Login](#login)).
 
 ## Configuration
 
@@ -89,8 +89,8 @@ Everything is optional; the defaults work out of the box. Copy `apps/api/.env.ex
 | Variable                                   | Default                 | Meaning                                                  |
 | ------------------------------------------ | ----------------------- | -------------------------------------------------------- |
 | `API_URL`                                  | `http://localhost:4000` | Where the API is. Only the Next.js server calls it       |
-| `PORTAL_BASIC_AUTH_ENABLED`                | `true`                  | `false` turns the portal login off                       |
-| `PORTAL_BASIC_AUTH_USER`, `PORTAL_BASIC_AUTH_PASSWORD` | `admin` / `admin123` | Your own portal login. Set **both** or neither |
+| `PORTAL_LOGIN_ENABLED`                      | `true`                  | `false` turns the sign-in popup off                      |
+| `PORTAL_LOGIN_USER`, `PORTAL_LOGIN_PASSWORD`  | `admin` / `admin123` | Your own portal login. Set **both** or neither |
 | `API_BASIC_AUTH_USER`, `API_BASIC_AUTH_PASSWORD` | `admin` / `admin123` | The login the web server sends to the API. Must match the API's login |
 
 ## Scripts
@@ -135,7 +135,7 @@ case), `phone` (optional), `status` (`new`, `contacted`, `qualified` or `lost`; 
 ### Examples
 
 Every command below was run against a fresh, seeded API. Responses are shortened here. The API asks for the login,
-so the commands include `-u admin:admin123` (the demo login; see [Basic auth](#basic-auth)). Only `/api/health` is
+so the commands include `-u admin:admin123` (the demo login; see [Login](#login)). Only `/api/health` is
 public.
 
 **Health**
@@ -290,15 +290,16 @@ curl -i -u admin:admin123 -X PATCH http://localhost:4000/api/leads/7 \
   -H "Content-Type: application/json" -d '{}'                  # 400  Provide at least one field to update
 ```
 
-### Basic auth
+### Login
 
-Both the web portal and the API are protected by HTTP Basic auth, and it is **on by default** with a demo login:
+Both the web portal and the API are protected, and it is **on by default** with a demo login:
 
 > **Username:** `admin`  **Password:** `admin123`
 
-- **Web portal:** the browser shows its own sign-in prompt before any page is served.
-- **API:** every `/api` route except `/api/health` needs the login. Without it you get `401` and a
-  `WWW-Authenticate` header; with it, the request goes through.
+| Protects           | How you sign in                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| The **web portal** | A **sign-in popup**. Any page you open while signed out shows it, and after signing in you land on the page you asked for. A **Sign out** button appears in the header. |
+| The **API**        | HTTP Basic auth (`curl -u admin:admin123 ...`). Every `/api` route except `/api/health` needs it; without it you get `401` and a `WWW-Authenticate` header. |
 
 ```bash
 curl http://localhost:4000/api/leads                           # 401
@@ -310,8 +311,14 @@ curl http://localhost:4000/api/health                          # 200 (health is 
 The browser never talks to the API directly. The portal's server signs in to the API for you (using
 `API_BASIC_AUTH_*`, which defaults to the same demo login), so the API password never reaches the browser.
 
+**How the portal sign-in works.** Signing in sets a cookie that is `HttpOnly` (scripts on the page cannot read it),
+`SameSite=Lax`, and lasts 8 hours. It holds a signed token (HMAC-SHA256, keyed from the login itself), so it cannot be
+forged or altered, and changing the password signs everyone out. Every page and every action (create, edit, delete,
+reorder, clone) checks it: signed out, pages redirect to the popup and actions are refused with `401`. A wrong
+password is answered after a short delay, and the popup only ever redirects to a page on this site.
+
 **Change the login.** The demo password is public (it is in this README), so choose your own for anything beyond a
-demo. Set both values of a pair, in the same place for the API and the web app:
+demo:
 
 ```bash
 # apps/api/.env
@@ -319,13 +326,13 @@ BASIC_AUTH_USER=rakesh
 BASIC_AUTH_PASSWORD=a-long-secret
 
 # apps/web/.env.local
-PORTAL_BASIC_AUTH_USER=rakesh          # what you type in the browser
-PORTAL_BASIC_AUTH_PASSWORD=a-long-secret
-API_BASIC_AUTH_USER=rakesh             # what the web server sends to the API (must match the API)
+PORTAL_LOGIN_USER=rakesh               # what you type in the sign-in popup
+PORTAL_LOGIN_PASSWORD=a-long-secret
+API_BASIC_AUTH_USER=rakesh             # what the web server sends to the API (must match the API's login)
 API_BASIC_AUTH_PASSWORD=a-long-secret
 ```
 
-**Turn a login off.** Set `BASIC_AUTH_ENABLED=false` (API) and/or `PORTAL_BASIC_AUTH_ENABLED=false` (web). The two
+**Turn a login off.** Set `BASIC_AUTH_ENABLED=false` (API) and/or `PORTAL_LOGIN_ENABLED=false` (portal). The two
 switches are independent.
 
 Setting only one half of a login (a user without a password, or the reverse) is treated as a mistake and is never
@@ -336,6 +343,7 @@ to start.
 
 | Page                  | What you can do                                                                                   |
 | --------------------- | ------------------------------------------------------------------------------------------------- |
+| `/login`              | The sign-in popup (see [Login](#login)). Shown automatically when you are signed out           |
 | `/leads`              | Status boxes, live search, status filter, rows per page (presets or any number 1-100), pagination |
 |                       | Drag the handle at the start of a row to reorder. Row actions: Overview (popup with notes), Edit, Clone, Delete |
 | `/leads/new`          | Create a lead, with validation messages under each field                                          |
@@ -411,7 +419,7 @@ Dockerfile, docker-compose.yml
 
 - The login is on by default so that opening the app shows the sign-in straight away. The demo password
   (`admin123`) is published in this README, which is fine for a demo but not for real data: set your own before
-  putting the app anywhere other people can reach it (see [Basic auth](#basic-auth)).
+  putting the app anywhere other people can reach it (see [Login](#login)).
 - Emails are unique (case-insensitive), so creating or editing a lead with a taken address returns `409`.
 - `updatedAt` changes when a lead's own fields change. Reordering, adding a note, or cloning does not change it.
 - Cloning does not copy notes, because they are the history of one conversation.

@@ -1,5 +1,5 @@
 # Runs the whole app: docker compose up --build
-#   Web portal: http://localhost:3000   (browser asks for a login: admin / admin123)
+#   Web portal: http://localhost:3000   (sign-in popup: admin / admin123)
 #   API:        http://localhost:4000
 #
 # Login is ON by default with the demo login admin / admin123, for both the portal and the API.
@@ -31,11 +31,11 @@ services:
       - '3000:3000'
     environment:
       API_URL: http://api:4000
-      # Your own portal login (set both):
-      # PORTAL_BASIC_AUTH_USER: admin
-      # PORTAL_BASIC_AUTH_PASSWORD: change-me
-      # Or turn the portal login off:
-      # PORTAL_BASIC_AUTH_ENABLED: 'false'
+      # Your own portal sign-in (set both):
+      # PORTAL_LOGIN_USER: admin
+      # PORTAL_LOGIN_PASSWORD: change-me
+      # Or turn the portal sign-in popup off:
+      # PORTAL_LOGIN_ENABLED: 'false'
       # The login this service sends to the API: must match the API's login above.
       # API_BASIC_AUTH_USER: admin
       # API_BASIC_AUTH_PASSWORD: change-me

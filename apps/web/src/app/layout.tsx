@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { SignOutButton } from '@/components/SignOutButton';
 import { ROUTES } from '@/constants/constants';
 import { MESSAGES } from '@/constants/messages';
+import { readPortalAuth } from '@/lib/portal-auth';
+import { isSignedIn } from '@/lib/session-server';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -10,7 +13,11 @@ export const metadata: Metadata = {
   description: MESSAGES.APP.DESCRIPTION,
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // "Sign out" only makes sense when there is a login and you are signed in to it.
+  const auth = readPortalAuth();
+  const showSignOut = auth.mode === 'on' && (await isSignedIn(auth));
+
   return (
     <html lang="en">
       <body>
@@ -25,6 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Link href={ROUTES.NEW_LEAD} className="btn">
                 {MESSAGES.APP.NAV_NEW_LEAD}
               </Link>
+              {showSignOut && <SignOutButton />}
             </nav>
           </div>
         </header>

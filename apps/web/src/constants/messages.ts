@@ -122,6 +122,22 @@ export const MESSAGES = {
     EMPTY: 'No notes yet. Add the first one above.',
   },
 
+  LOGIN: {
+    TITLE: 'Sign in',
+    SUBTITLE: 'Enter your username and password to open Leads Tracker.',
+    USERNAME: 'Username',
+    PASSWORD: 'Password',
+    SUBMIT: 'Sign in',
+    SIGNING_IN: 'Signing in…',
+    INVALID: 'Invalid username or password.',
+    SIGN_OUT: 'Sign out',
+    SIGNING_OUT: 'Signing out…',
+    demoHint: (user: string, password: string) => `Demo login: ${user} / ${password}`,
+    MISCONFIGURED:
+      'Portal login is misconfigured: set both PORTAL_LOGIN_USER and PORTAL_LOGIN_PASSWORD, or neither.',
+    UNAUTHENTICATED: 'Authentication required',
+  },
+
   ERRORS: {
     GENERIC_TITLE: 'Something went wrong',
     GENERIC_FALLBACK: 'An unexpected error occurred.',

@@ -36,6 +36,17 @@ export function parsePageSize(value: string | undefined): number {
 export const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
 
+/**
+ * Where to go after signing in. Only a path on this site is accepted, so a crafted link such as
+ * /login?next=https://evil.example or ?next=//evil.example cannot send someone elsewhere.
+ */
+export function safeNextPath(value: string | undefined, fallback: string = ROUTES.LEADS): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
+    return fallback;
+  }
+  return value === ROUTES.LOGIN || value.startsWith(`${ROUTES.LOGIN}?`) ? fallback : value;
+}
+
 export const isNumericId = (segment: string): boolean => NUMERIC_ID_PATTERN.test(segment);
 
 type QueryValue = string | number | undefined | null;

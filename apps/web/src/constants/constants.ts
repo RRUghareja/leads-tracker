@@ -8,6 +8,15 @@ export const DEFAULT_API_URL = 'http://localhost:4000';
  */
 export const DEFAULT_LOGIN = { USER: 'admin', PASSWORD: 'admin123' } as const;
 
+/** The sign-in cookie: how it is named and how long a sign-in lasts. */
+export const SESSION = {
+  COOKIE: 'leads_session',
+  MAX_AGE_SECONDS: 8 * 60 * 60,
+} as const;
+
+/** A wrong password waits this long before answering, which makes guessing passwords slow. */
+export const FAILED_LOGIN_DELAY_MS = 500;
+
 /** Values of an on/off environment variable that mean "off". Anything else means "on". */
 export const OFF_VALUES = ['false', '0', 'off', 'no'] as const;
 
@@ -31,6 +40,7 @@ export const NUMERIC_ID_PATTERN = /^\d+$/;
 /** Page URLs. */
 export const ROUTES = {
   HOME: '/',
+  LOGIN: '/login',
   LEADS: '/leads',
   NEW_LEAD: '/leads/new',
   lead: (id: number) => `/leads/${id}`,
@@ -53,6 +63,7 @@ export const QUERY_PARAMS = {
   STATUS: 'status',
   PAGE: 'page',
   LIMIT: 'limit',
+  NEXT: 'next',
 } as const;
 
 /** `name` attributes of form inputs, shared by the forms and the server actions that read them. */
@@ -62,4 +73,7 @@ export const FORM_FIELDS = {
   PHONE: 'phone',
   STATUS: 'status',
   CONTENT: 'content',
+  USERNAME: 'username',
+  PASSWORD: 'password',
+  NEXT: 'next',
 } as const;

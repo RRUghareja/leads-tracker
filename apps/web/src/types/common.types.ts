@@ -39,3 +39,6 @@ export type FormState = {
   /** What the user typed, so a failed submit does not wipe the form. */
   values?: Record<string, string>;
 };
+
+/** What the sign-in form gets back after a wrong password: the message, and the username to keep. */
+export type LoginState = { error?: string; username?: string };
