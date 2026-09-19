@@ -2,6 +2,15 @@
 
 export const DEFAULT_API_URL = 'http://localhost:4000';
 
+/**
+ * The demo login used when nothing else is configured. It matches the API's default, so the portal
+ * and the API work together with no setup. Change it for anything beyond a demo.
+ */
+export const DEFAULT_LOGIN = { USER: 'admin', PASSWORD: 'admin123' } as const;
+
+/** Values of an on/off environment variable that mean "off". Anything else means "on". */
+export const OFF_VALUES = ['false', '0', 'off', 'no'] as const;
+
 /** Quick rows-per-page choices offered in the list footer. */
 export const PAGE_SIZE_OPTIONS = [5, 10, 20, 25, 50, 100] as const;
 export const DEFAULT_PAGE_SIZE = 10;

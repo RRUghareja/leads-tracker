@@ -9,9 +9,17 @@ import type { AppConfig } from '../src/types/common.types';
 
 export type TestContext = { app: Express; db: Db; config: AppConfig };
 
-/** Fresh app + isolated in-memory database, so tests never share state. */
+/**
+ * Fresh app + isolated in-memory database, so tests never share state.
+ * Login is switched off unless a test asks for it, so most tests can call the API directly.
+ */
 export function createTestContext(env: NodeJS.ProcessEnv = {}): TestContext {
-  const config = loadConfig({ NODE_ENV: NodeEnv.TEST, DATABASE_PATH: IN_MEMORY_DATABASE, ...env });
+  const config = loadConfig({
+    NODE_ENV: NodeEnv.TEST,
+    DATABASE_PATH: IN_MEMORY_DATABASE,
+    BASIC_AUTH_ENABLED: 'false',
+    ...env,
+  });
   const db = createDatabase(IN_MEMORY_DATABASE);
   migrate(db);
 

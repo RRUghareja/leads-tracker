@@ -1,6 +1,10 @@
 # Runs the whole app: docker compose up --build
-#   Web portal: http://localhost:3000
+#   Web portal: http://localhost:3000   (browser asks for a login: admin / admin123)
 #   API:        http://localhost:4000
+#
+# Login is ON by default with the demo login admin / admin123, for both the portal and the API.
+# Before using this for anything real, uncomment the lines below and choose your own password
+# (use the same values in the api and web services so they keep working together).
 services:
   api:
     build:
@@ -10,9 +14,11 @@ services:
       - '4000:4000'
     environment:
       CORS_ORIGIN: http://localhost:3000
-      # Uncomment both to protect the API with HTTP Basic auth (and give the web app the same login).
+      # Your own API login (set both):
       # BASIC_AUTH_USER: admin
       # BASIC_AUTH_PASSWORD: change-me
+      # Or turn the API login off:
+      # BASIC_AUTH_ENABLED: 'false'
     volumes:
       - leads-data:/data
     restart: unless-stopped
@@ -25,11 +31,14 @@ services:
       - '3000:3000'
     environment:
       API_URL: http://api:4000
-      # API_BASIC_AUTH_USER: admin
-      # API_BASIC_AUTH_PASSWORD: change-me
-      # Uncomment both to make the browser ask for a login before showing the portal.
+      # Your own portal login (set both):
       # PORTAL_BASIC_AUTH_USER: admin
       # PORTAL_BASIC_AUTH_PASSWORD: change-me
+      # Or turn the portal login off:
+      # PORTAL_BASIC_AUTH_ENABLED: 'false'
+      # The login this service sends to the API: must match the API's login above.
+      # API_BASIC_AUTH_USER: admin
+      # API_BASIC_AUTH_PASSWORD: change-me
     depends_on:
       api:
         condition: service_healthy

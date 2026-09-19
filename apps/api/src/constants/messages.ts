@@ -56,7 +56,10 @@ export const MESSAGES = {
   LOG: {
     listening: (port: number, env: string) => `API listening on http://localhost:${port} (${env})`,
     AUTH_ENABLED: 'Basic auth: enabled',
-    AUTH_DISABLED: 'Basic auth: disabled',
+    AUTH_DISABLED: 'Basic auth: disabled (BASIC_AUTH_ENABLED=false)',
+    authDemo: (user: string, password: string) =>
+      `Basic auth is using the demo login (${user} / ${password}). Set BASIC_AUTH_USER and ` +
+      'BASIC_AUTH_PASSWORD to change it, or BASIC_AUTH_ENABLED=false to turn it off.',
     shuttingDown: (signal: string) => `${signal} received, shutting down`,
     unhandled: (method: string, url: string) => `Unhandled error on ${method} ${url}`,
     seeded: (count: number) => `Seeded ${count} leads.`,

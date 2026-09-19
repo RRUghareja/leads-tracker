@@ -1,16 +1,26 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { DEFAULT_LOGIN, OFF_VALUES } from '@/constants/constants';
+
 /**
- * Optional HTTP Basic auth for the whole web portal.
+ * HTTP Basic auth for the whole web portal: the browser shows its own login prompt before any page
+ * is served.
  *
- * Off by default. Set PORTAL_BASIC_AUTH_USER and PORTAL_BASIC_AUTH_PASSWORD to turn it on: the browser
- * then shows its own login prompt before any page is served. (These are separate from
- * API_BASIC_AUTH_*, which is the login the web server uses when it calls the API.)
+ * ON by default, with the demo login (admin / admin123).
+ *   - PORTAL_BASIC_AUTH_USER + PORTAL_BASIC_AUTH_PASSWORD choose a different login.
+ *   - PORTAL_BASIC_AUTH_ENABLED=false turns the login off.
+ * (These are separate from API_BASIC_AUTH_*, the login this web server sends when it calls the API.)
  *
  * This runs in Next.js's edge runtime, so it uses only Web APIs.
  */
 
 const REALM = 'Leads Tracker';
+
+/** Blank values count as "not set". */
+const fromEnv = (value: string | undefined) => (value && value.trim() !== '' ? value : undefined);
+
+const isSwitchedOff = (value: string | undefined) =>
+  (OFF_VALUES as readonly string[]).includes((value ?? '').trim().toLowerCase());
 
 /** Compares without stopping at the first difference, so timing does not reveal how much matched. */
 function safeEqual(a: string, b: string): boolean {
@@ -40,20 +50,21 @@ function parseBasicHeader(header: string | null): { user: string; password: stri
 }
 
 export function middleware(request: NextRequest) {
-  const user = process.env.PORTAL_BASIC_AUTH_USER || undefined;
-  const password = process.env.PORTAL_BASIC_AUTH_PASSWORD || undefined;
+  if (isSwitchedOff(process.env.PORTAL_BASIC_AUTH_ENABLED)) return NextResponse.next();
 
-  if (!user && !password) return NextResponse.next(); // auth is switched off
+  const customUser = fromEnv(process.env.PORTAL_BASIC_AUTH_USER);
+  const customPassword = fromEnv(process.env.PORTAL_BASIC_AUTH_PASSWORD);
 
-  // Half a configuration is a mistake. Refuse everything rather than silently leave the site open.
-  if (!user || !password) {
+  // Half a custom login is a mistake. Refuse everything rather than mix it with the demo login.
+  if (Boolean(customUser) !== Boolean(customPassword)) {
     return new NextResponse(
       'Portal login is misconfigured: set both PORTAL_BASIC_AUTH_USER and PORTAL_BASIC_AUTH_PASSWORD.',
-      {
-        status: 500,
-      },
+      { status: 500 },
     );
   }
+
+  const user = customUser ?? DEFAULT_LOGIN.USER;
+  const password = customPassword ?? DEFAULT_LOGIN.PASSWORD;
 
   const supplied = parseBasicHeader(request.headers.get('authorization'));
   // Evaluate both comparisons so timing does not reveal which field was wrong.

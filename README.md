@@ -6,7 +6,8 @@ in TypeScript.
 - Manage leads (name, email, phone, status) and keep notes on each one.
 - Search, filter by status, paginate, drag rows to reorder, clone, and see counts per status.
 - Consistent JSON responses, validation with clear messages, proper HTTP status codes.
-- Optional HTTP Basic auth, Jest tests, seed script, Dockerfile.
+- HTTP Basic auth on the portal and the API (on by default, demo login `admin` / `admin123`), Jest tests, seed
+  script, Dockerfile.
 
 ## Contents
 
@@ -28,6 +29,13 @@ npm run dev
 | Web portal | http://localhost:3000            |
 | API        | http://localhost:4000            |
 | Health     | http://localhost:4000/api/health |
+
+**Sign in.** The browser asks for a login when you open the portal. The demo login is:
+
+> **Username:** `admin`  **Password:** `admin123`
+
+It protects the API too (the portal signs in to it for you). See [Basic auth](#basic-auth) to change the password
+or switch the login off.
 
 The database file (`apps/api/data/leads.db`) is created on first start. To fill it with six sample leads and notes:
 
@@ -58,8 +66,8 @@ docker build --target api -t leads-api .
 docker build --target web -t leads-web .
 ```
 
-To require a login, uncomment the `BASIC_AUTH_*`, `API_BASIC_AUTH_*` and `PORTAL_BASIC_AUTH_*` lines in
-`docker-compose.yml` (see [Basic auth](#basic-auth)).
+The login is on here too: open http://localhost:3000 and sign in with `admin` / `admin123`. To choose your own
+password, or turn the login off, edit the commented lines in `docker-compose.yml` (see [Basic auth](#basic-auth)).
 
 ## Configuration
 
@@ -73,15 +81,17 @@ Everything is optional; the defaults work out of the box. Copy `apps/api/.env.ex
 | `PORT`                                | `4000`                  | Port the API listens on                                    |
 | `DATABASE_PATH`                       | `data/leads.db`         | SQLite file. `:memory:` keeps everything in RAM (tests)    |
 | `CORS_ORIGIN`                         | `http://localhost:3000` | Origin allowed to call the API from a browser              |
-| `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD` | _(empty = no auth)_  | Set **both** to require HTTP Basic auth on every `/api` route except `/api/health` |
+| `BASIC_AUTH_ENABLED`                  | `true`                  | `false` turns the API login off                            |
+| `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD` | `admin` / `admin123` | Your own login. Set **both** or neither. Protects every `/api` route except `/api/health` |
 
 **Web** (`apps/web`)
 
 | Variable                                   | Default                 | Meaning                                                  |
 | ------------------------------------------ | ----------------------- | -------------------------------------------------------- |
 | `API_URL`                                  | `http://localhost:4000` | Where the API is. Only the Next.js server calls it       |
-| `API_BASIC_AUTH_USER`, `API_BASIC_AUTH_PASSWORD` | _(empty)_         | The login the web server sends to the API, when the API has auth turned on |
-| `PORTAL_BASIC_AUTH_USER`, `PORTAL_BASIC_AUTH_PASSWORD` | _(empty = no login)_ | Set **both** to make the browser ask for a login before showing any page |
+| `PORTAL_BASIC_AUTH_ENABLED`                | `true`                  | `false` turns the portal login off                       |
+| `PORTAL_BASIC_AUTH_USER`, `PORTAL_BASIC_AUTH_PASSWORD` | `admin` / `admin123` | Your own portal login. Set **both** or neither |
+| `API_BASIC_AUTH_USER`, `API_BASIC_AUTH_PASSWORD` | `admin` / `admin123` | The login the web server sends to the API. Must match the API's login |
 
 ## Scripts
 
@@ -124,7 +134,9 @@ case), `phone` (optional), `status` (`new`, `contacted`, `qualified` or `lost`; 
 
 ### Examples
 
-Every command below was run against a fresh, seeded API. Responses are shortened here.
+Every command below was run against a fresh, seeded API. Responses are shortened here. The API asks for the login,
+so the commands include `-u admin:admin123` (the demo login; see [Basic auth](#basic-auth)). Only `/api/health` is
+public.
 
 **Health**
 
@@ -141,8 +153,8 @@ curl http://localhost:4000/api/health
 **List, search and filter** (`GET /api/leads?search=&status=&page=&limit=`)
 
 ```bash
-curl "http://localhost:4000/api/leads?limit=2"
-curl "http://localhost:4000/api/leads?search=acme&status=new"
+curl -u admin:admin123 "http://localhost:4000/api/leads?limit=2"
+curl -u admin:admin123 "http://localhost:4000/api/leads?search=acme&status=new"
 ```
 
 ```json
@@ -157,7 +169,7 @@ curl "http://localhost:4000/api/leads?search=acme&status=new"
 **Create a lead** (`POST /api/leads`, responds `201 Created` with a `Location` header)
 
 ```bash
-curl -X POST http://localhost:4000/api/leads \
+curl -u admin:admin123 -X POST http://localhost:4000/api/leads \
   -H "Content-Type: application/json" \
   -d '{"name":"Priya Nair","email":"priya@example.com","phone":"+91 90000 11111"}'
 ```
@@ -172,13 +184,13 @@ curl -X POST http://localhost:4000/api/leads \
 **Get one lead**
 
 ```bash
-curl http://localhost:4000/api/leads/7
+curl -u admin:admin123 http://localhost:4000/api/leads/7
 ```
 
 **Update a lead.** Send only the fields you want to change. `"phone": null` clears the phone number.
 
 ```bash
-curl -X PATCH http://localhost:4000/api/leads/7 \
+curl -u admin:admin123 -X PATCH http://localhost:4000/api/leads/7 \
   -H "Content-Type: application/json" \
   -d '{"status":"contacted"}'
 ```
@@ -186,7 +198,7 @@ curl -X PATCH http://localhost:4000/api/leads/7 \
 **Delete a lead** (its notes are deleted with it)
 
 ```bash
-curl -X DELETE http://localhost:4000/api/leads/7
+curl -u admin:admin123 -X DELETE http://localhost:4000/api/leads/7
 ```
 
 ```json
@@ -196,11 +208,11 @@ curl -X DELETE http://localhost:4000/api/leads/7
 **Add a note, then list notes** (newest first)
 
 ```bash
-curl -X POST http://localhost:4000/api/leads/7/notes \
+curl -u admin:admin123 -X POST http://localhost:4000/api/leads/7/notes \
   -H "Content-Type: application/json" \
   -d '{"content":"Called, wants a demo next week."}'
 
-curl http://localhost:4000/api/leads/7/notes
+curl -u admin:admin123 http://localhost:4000/api/leads/7/notes
 ```
 
 ```json
@@ -212,7 +224,7 @@ curl http://localhost:4000/api/leads/7/notes
 **Counts per status** (used by the boxes at the top of the list)
 
 ```bash
-curl http://localhost:4000/api/leads/stats
+curl -u admin:admin123 http://localhost:4000/api/leads/stats
 ```
 
 ```json
@@ -225,14 +237,14 @@ curl http://localhost:4000/api/leads/stats
 must be unique.
 
 ```bash
-curl -X POST http://localhost:4000/api/leads/7/clone
+curl -u admin:admin123 -X POST http://localhost:4000/api/leads/7/clone
 ```
 
 **Reorder.** The leads listed swap among the positions they already hold, so leads that are not in the request keep
 their place.
 
 ```bash
-curl -X PATCH http://localhost:4000/api/leads/reorder \
+curl -u admin:admin123 -X PATCH http://localhost:4000/api/leads/reorder \
   -H "Content-Type: application/json" \
   -d '{"ids":[1,2]}'
 ```
@@ -257,7 +269,7 @@ Every response, success or failure, has the same five keys. Values that do not a
 Validation errors list every problem at once, so a form can show them all:
 
 ```bash
-curl -X POST http://localhost:4000/api/leads -H "Content-Type: application/json" -d '{"email":"nope"}'
+curl -u admin:admin123 -X POST http://localhost:4000/api/leads -H "Content-Type: application/json" -d '{"email":"nope"}'
 ```
 
 ```json
@@ -270,54 +282,55 @@ curl -X POST http://localhost:4000/api/leads -H "Content-Type: application/json"
 Other cases you can try:
 
 ```bash
-curl -i http://localhost:4000/api/leads/999          # 404  Lead not found
-curl -i http://localhost:4000/api/leads/abc          # 400  id must be a positive integer
-curl -i -X POST http://localhost:4000/api/leads/7/notes \
+curl -i -u admin:admin123 http://localhost:4000/api/leads/999          # 404  Lead not found
+curl -i -u admin:admin123 http://localhost:4000/api/leads/abc          # 400  id must be a positive integer
+curl -i -u admin:admin123 -X POST http://localhost:4000/api/leads/7/notes \
   -H "Content-Type: application/json" -d '{"content":"   "}'   # 400  Content is required (empty note)
-curl -i -X PATCH http://localhost:4000/api/leads/7 \
+curl -i -u admin:admin123 -X PATCH http://localhost:4000/api/leads/7 \
   -H "Content-Type: application/json" -d '{}'                  # 400  Provide at least one field to update
 ```
 
 ### Basic auth
 
-Set both variables and restart the API:
+Both the web portal and the API are protected by HTTP Basic auth, and it is **on by default** with a demo login:
+
+> **Username:** `admin`  **Password:** `admin123`
+
+- **Web portal:** the browser shows its own sign-in prompt before any page is served.
+- **API:** every `/api` route except `/api/health` needs the login. Without it you get `401` and a
+  `WWW-Authenticate` header; with it, the request goes through.
 
 ```bash
-BASIC_AUTH_USER=admin BASIC_AUTH_PASSWORD=s3cret npm run dev -w apps/api
+curl http://localhost:4000/api/leads                           # 401
+curl -u admin:wrong http://localhost:4000/api/leads            # 401
+curl -u admin:admin123 http://localhost:4000/api/leads         # 200
+curl http://localhost:4000/api/health                          # 200 (health is always public)
 ```
 
-```bash
-curl http://localhost:4000/api/leads                     # 401, with a WWW-Authenticate header
-curl -u admin:s3cret http://localhost:4000/api/leads     # 200
-curl http://localhost:4000/api/health                    # 200 (health is always public)
-```
+The browser never talks to the API directly. The portal's server signs in to the API for you (using
+`API_BASIC_AUTH_*`, which defaults to the same demo login), so the API password never reaches the browser.
 
-There are two independent logins, both off by default:
-
-| Protects           | Set these variables                                  | Where                |
-| ------------------ | ---------------------------------------------------- | -------------------- |
-| The **API**        | `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD`             | `apps/api/.env`      |
-| The **web portal** | `PORTAL_BASIC_AUTH_USER`, `PORTAL_BASIC_AUTH_PASSWORD` | `apps/web/.env.local` |
-
-With the portal login on, the browser shows its own sign-in prompt before any page is served. If the API is also
-protected, give the web server its login through `API_BASIC_AUTH_USER` and `API_BASIC_AUTH_PASSWORD`. The browser
-never talks to the API directly, so the API password is never sent to it. Setting only one of a pair is treated as a
-mistake: the portal refuses every request (HTTP 500 with an explanation) instead of silently staying open, and the
-API refuses to start.
-
-Example, protecting everything with the same login:
+**Change the login.** The demo password is public (it is in this README), so choose your own for anything beyond a
+demo. Set both values of a pair, in the same place for the API and the web app:
 
 ```bash
 # apps/api/.env
-BASIC_AUTH_USER=admin
-BASIC_AUTH_PASSWORD=s3cret
+BASIC_AUTH_USER=rakesh
+BASIC_AUTH_PASSWORD=a-long-secret
 
 # apps/web/.env.local
-API_BASIC_AUTH_USER=admin
-API_BASIC_AUTH_PASSWORD=s3cret
-PORTAL_BASIC_AUTH_USER=admin
-PORTAL_BASIC_AUTH_PASSWORD=s3cret
+PORTAL_BASIC_AUTH_USER=rakesh          # what you type in the browser
+PORTAL_BASIC_AUTH_PASSWORD=a-long-secret
+API_BASIC_AUTH_USER=rakesh             # what the web server sends to the API (must match the API)
+API_BASIC_AUTH_PASSWORD=a-long-secret
 ```
+
+**Turn a login off.** Set `BASIC_AUTH_ENABLED=false` (API) and/or `PORTAL_BASIC_AUTH_ENABLED=false` (web). The two
+switches are independent.
+
+Setting only one half of a login (a user without a password, or the reverse) is treated as a mistake and is never
+mixed with the demo login: the portal answers every request with HTTP 500 and an explanation, and the API refuses
+to start.
 
 ## Web portal
 
@@ -396,6 +409,9 @@ Dockerfile, docker-compose.yml
 
 ### Notes and assumptions
 
+- The login is on by default so that opening the app shows the sign-in straight away. The demo password
+  (`admin123`) is published in this README, which is fine for a demo but not for real data: set your own before
+  putting the app anywhere other people can reach it (see [Basic auth](#basic-auth)).
 - Emails are unique (case-insensitive), so creating or editing a lead with a taken address returns `409`.
 - `updatedAt` changes when a lead's own fields change. Reordering, adding a note, or cloning does not change it.
 - Cloning does not copy notes, because they are the history of one conversation.
@@ -407,6 +423,6 @@ Dockerfile, docker-compose.yml
 npm test
 ```
 
-77 tests (Jest + Supertest) cover every endpoint: success paths, validation errors, 404 for a missing lead, duplicate
-emails, empty notes, search and filter (including `%` and `_`), pagination, reordering, cloning, stats, basic auth,
+94 tests (Jest + Supertest) cover every endpoint: success paths, validation errors, 404 for a missing lead, duplicate
+emails, empty notes, search and filter (including `%` and `_`), pagination, reordering, cloning, stats, basic auth and its settings,
 and the database upgrade for old databases. Tests run against an in-memory database and need no setup.

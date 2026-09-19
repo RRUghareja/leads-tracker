@@ -15,6 +15,10 @@ const app = createApp({ config, db });
 const server = app.listen(config.port, () => {
   logger.info(MESSAGES.LOG.listening(config.port, config.env));
   logger.info(config.basicAuth ? MESSAGES.LOG.AUTH_ENABLED : MESSAGES.LOG.AUTH_DISABLED);
+
+  if (config.basicAuth && config.usesDemoLogin) {
+    logger.warn(MESSAGES.LOG.authDemo(config.basicAuth.user, config.basicAuth.password));
+  }
 });
 
 /** Finish in-flight requests, then release the database file before exiting. */

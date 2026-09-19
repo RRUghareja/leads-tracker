@@ -60,4 +60,7 @@ export const PHONE_PATTERN = /^[+()\-.\s\d]*$/;
 export const BASIC_AUTH = {
   SCHEME: 'Basic',
   REALM: 'Leads Tracker',
+  /** The demo login used when auth is on but no credentials are configured. Change it for real use. */
+  DEFAULT_USER: 'admin',
+  DEFAULT_PASSWORD: 'admin123',
 } as const;

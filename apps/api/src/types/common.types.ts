@@ -10,6 +10,8 @@ export type AppConfig = {
   corsOrigin: string;
   /** Present only when both a user and a password are configured. */
   basicAuth?: BasicAuthCredentials;
+  /** True when auth is on with the built-in demo login rather than credentials from the environment. */
+  usesDemoLogin: boolean;
 };
 
 export type BasicAuthCredentials = { user: string; password: string };

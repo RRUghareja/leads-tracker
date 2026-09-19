@@ -48,7 +48,11 @@ describe('API foundation', () => {
   });
 
   describe('basic auth', () => {
-    const env = { BASIC_AUTH_USER: 'admin', BASIC_AUTH_PASSWORD: 's3cret' };
+    const env = {
+      BASIC_AUTH_ENABLED: 'true',
+      BASIC_AUTH_USER: 'admin',
+      BASIC_AUTH_PASSWORD: 's3cret',
+    };
 
     it('keeps the health check public', async () => {
       const { app } = createTestContext(env);
