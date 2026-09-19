@@ -1,0 +1,36 @@
+# Runs the whole app: docker compose up --build
+#   Web portal: http://localhost:3000
+#   API:        http://localhost:4000
+services:
+  api:
+    build:
+      context: .
+      target: api
+    ports:
+      - '4000:4000'
+    environment:
+      CORS_ORIGIN: http://localhost:3000
+      # Uncomment both to protect the API with HTTP Basic auth (and give the web app the same login).
+      # BASIC_AUTH_USER: admin
+      # BASIC_AUTH_PASSWORD: change-me
+    volumes:
+      - leads-data:/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      target: web
+    ports:
+      - '3000:3000'
+    environment:
+      API_URL: http://api:4000
+      # API_BASIC_AUTH_USER: admin
+      # API_BASIC_AUTH_PASSWORD: change-me
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  leads-data:

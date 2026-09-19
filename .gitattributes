@@ -1,0 +1,3 @@
+# Store text files with LF line endings in the repository, whatever the OS of the person who commits.
+# (Matches .editorconfig, and keeps the Dockerfile and shell-facing files valid on Linux.)
+* text=auto eol=lf
